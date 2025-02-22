@@ -14,12 +14,16 @@ import pufferlib.postprocess
 def env_creator(name='metroid_ii'):
     return functools.partial(make, name)
 
-def make(name, render_mode=None, buf=None):
+def make(name, render_mode='rgb_array', buf=None):
     '''Metroid II'''
-    # From Metroid-II-RL repo
-    env = MetroidEnv(render_mode=render_mode)
+    speed = 1 if render_mode == 'human' else 0
+    # If we are renderingit as a human, we probably want to watch it
+
+    # From Metroid-II-RL repo, that was installed with `pip install -e .`
+    env = MetroidEnv(render_mode=render_mode, emulation_speed_factor=speed)
+
     # env = RenderWrapper(env)
-    env = pufferlib.postprocess.EpisodeStats(env)
+    # env = pufferlib.postprocess.EpisodeStats(env)
     return pufferlib.emulation.GymnasiumPufferEnv(env=env, buf=buf)
 
 '''
