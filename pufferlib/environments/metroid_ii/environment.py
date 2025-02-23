@@ -23,7 +23,7 @@ def make(name, render_mode='rgb_array', buf=None):
     env = MetroidEnv(render_mode=render_mode, emulation_speed_factor=speed)
 
     # env = RenderWrapper(env)
-    # env = pufferlib.postprocess.EpisodeStats(env)
+    env = pufferlib.postprocess.EpisodeStats(env)
     return pufferlib.emulation.GymnasiumPufferEnv(env=env, buf=buf)
 
 '''
