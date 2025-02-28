@@ -1,6 +1,5 @@
-# COPIED FROM POKEMON RED CODE
 from functools import partial
-import torch
+import torch.nn as nn
 
 import pufferlib.models
 
@@ -11,27 +10,54 @@ class Recurrent(pufferlib.models.LSTMWrapper):
         super().__init__(env, policy,
             input_size, hidden_size, num_layers)
 
-class Policy(pufferlib.models.Convolutional):
-    def __init__(self, env,
+class Policy(nn.Module):
+    # flat_size and framestack were ambiguous choices
+    def __init__(self, env, *args, framestack=1, flat_size=1280,
             input_size=512, hidden_size=512, output_size=512,
-            framestack=1, flat_size=64*5*6):
-        super().__init__(
-            env=env,
-            input_size=input_size,
-            hidden_size=hidden_size,
-            output_size=output_size,
-            framestack=framestack,
-            flat_size=flat_size,
-            channels_last=True,
+            channels_last=True, downsample=1, **kwargs):
+        super().__init__()
+        self.channels_last = channels_last
+        self.downsample = downsample
+        self.dtype = pufferlib.pytorch.nativize_dtype(env.emulated)
+
+        # The actual network
+        self.network= nn.Sequential(
+            
+            pufferlib.pytorch.layer_init(nn.Conv2d(framestack, 32, 3, stride=2)),
+            nn.ReLU(),
+            # was 4 kernel size
+            pufferlib.pytorch.layer_init(nn.Conv2d(32, 64, 3, stride=1)),
+            nn.ReLU(),
+            pufferlib.pytorch.layer_init(nn.Conv2d(64, 64, 3, stride=1)),
+            nn.ReLU(),
+            nn.Flatten(),
+            pufferlib.pytorch.layer_init(nn.Linear(flat_size, hidden_size)),
+            nn.ReLU(),
         )
 
+        self.actor = pufferlib.pytorch.layer_init( nn.Linear(hidden_size, env.single_action_space.n), std=0.01)
 
-'''
-class Policy(pufferlib.models.ProcgenResnet):
-    def __init__(self, env, cnn_width=16, mlp_width=512):
-        super().__init__(
-            env=env,
-            cnn_width=cnn_width,
-            mlp_width=mlp_width,
-        )
-'''
+        # critic
+        self.value_fn = pufferlib.pytorch.layer_init( nn.Linear(output_size, 1), std=1)
+
+    def forward(self, observations):
+        hidden, lookup = self.encode_observations(observations)
+        actions, value = self.decode_actions(hidden, lookup)
+        return actions, value
+
+    def encode_observations(self, observations):
+        # print(f"self dtype: {self.dtype}")
+        # input("hold")
+        # observations = pufferlib.pytorch.nativize_tensor(observations, self.dtype)
+        if self.channels_last:
+            observations = observations.permute(0, 3, 1, 2)
+        if self.downsample > 1:
+            observations = observations[:, :, ::self.downsample, ::self.downsample]
+
+        # return self.network(observations.float() / 255.0), None
+        return self.network(observations.float()), None
+
+    def decode_actions(self, flat_hidden, lookup, concat=None):
+        action = self.actor(flat_hidden)
+        value = self.value_fn(flat_hidden)
+        return action, value
