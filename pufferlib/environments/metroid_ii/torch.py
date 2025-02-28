@@ -12,7 +12,7 @@ class Recurrent(pufferlib.models.LSTMWrapper):
 
 class Policy(nn.Module):
     # flat_size and framestack were ambiguous choices
-    def __init__(self, env, *args, framestack=1, flat_size=1280,
+    def __init__(self, env, *args, framestack=1, flat_size=1920,
             input_size=512, hidden_size=512, output_size=512,
             channels_last=True, downsample=1, **kwargs):
         super().__init__()
@@ -23,10 +23,10 @@ class Policy(nn.Module):
         # The actual network
         self.network= nn.Sequential(
             
-            pufferlib.pytorch.layer_init(nn.Conv2d(framestack, 32, 3, stride=2)),
+            pufferlib.pytorch.layer_init(nn.Conv2d(framestack, 32, 8, stride=4)),
             nn.ReLU(),
             # was 4 kernel size
-            pufferlib.pytorch.layer_init(nn.Conv2d(32, 64, 3, stride=1)),
+            pufferlib.pytorch.layer_init(nn.Conv2d(32, 64, 4, stride=2)),
             nn.ReLU(),
             pufferlib.pytorch.layer_init(nn.Conv2d(64, 64, 3, stride=1)),
             nn.ReLU(),
