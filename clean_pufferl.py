@@ -583,7 +583,9 @@ def rollout(env_creator, env_kwargs, policy_cls, rnn_cls, agent_creator, agent_k
 
     frames = []
     tick = 0
-    while tick <= 2000:
+    done = False
+    # while tick <= 2000:
+    while not done:
         if tick % 1 == 0:
             render = driver.render()
             if driver.render_mode == 'ansi':
@@ -608,7 +610,9 @@ def rollout(env_creator, env_kwargs, policy_cls, rnn_cls, agent_creator, agent_k
 
             action = action.cpu().numpy().reshape(env.action_space.shape)
 
-        ob, reward = env.step(action)[:2]
+        # ob, reward = env.step(action)[:2]
+        ob, reward, terminated, truncated, info = env.step(action)
+        done = terminated or truncated
         reward = reward.mean()
         if tick % 128 == 0:
             print(f'Reward: {reward:.4f}, Tick: {tick}')
