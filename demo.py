@@ -418,6 +418,8 @@ if __name__ == '__main__':
         except:
             prev[subkey] = value
 
+
+    # IMPORT PUFFERLIB ENVIRONMNET
     package = args['package']
     module_name = f'pufferlib.environments.{package}'
     if package == 'ocean':
@@ -448,11 +450,16 @@ if __name__ == '__main__':
             data_dir = artifact.download()
             model_file = max(os.listdir(data_dir))
             args['eval_model_path'] = os.path.join(data_dir, model_file)
+
+    # IF TRAINING
     if args['mode'] == 'train':
         wandb = None
         if args['track']:
             wandb = init_wandb(args, env_name, id=args['exp_id'])
         train(args, make_env, policy_cls, rnn_cls, wandb=wandb)
+
+
+    # IF EVALUATING
     elif args['mode'] in ('eval', 'evaluate'):
         vec = pufferlib.vector.Serial
         if args['vec'] == 'native':
