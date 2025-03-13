@@ -15,7 +15,7 @@ class Recurrent(pufferlib.models.LSTMWrapper):
 class Policy(nn.Module):
     # Flat size is dims after CNN
     # framestack were ambiguous choice
-    def __init__(self, env, *args, framestack=1, flat_size=(3460),
+    def __init__(self, env, *args, framestack=1, flat_size=(1412),
             input_size=512, hidden_size=512, output_size=512,
             channels_last=True, downsample=1, **kwargs):
         super().__init__()
@@ -29,9 +29,9 @@ class Policy(nn.Module):
             pufferlib.pytorch.layer_init(nn.Conv2d(framestack, 32, 8, stride=2)),
             nn.ReLU(),
             # was 4 kernel size
-            pufferlib.pytorch.layer_init(nn.Conv2d(32, 32, 4, stride=1)),
+            pufferlib.pytorch.layer_init(nn.Conv2d(32, 16, 5, stride=1)),
             nn.ReLU(),
-            pufferlib.pytorch.layer_init(nn.Conv2d(32, 32, 3, stride=1)),
+            pufferlib.pytorch.layer_init(nn.Conv2d(16, 16, 3, stride=1)),
             nn.ReLU(),
             # flatten obs from CNN, and do one more Linear layer
             nn.Flatten(),
@@ -44,8 +44,6 @@ class Policy(nn.Module):
         # The network for encoding all features, three layers cause why not
         self.feature_network = nn.Sequential(
             pufferlib.pytorch.layer_init(nn.Linear(flat_size, hidden_size)),
-            nn.ReLU(),
-            pufferlib.pytorch.layer_init(nn.Linear(hidden_size, hidden_size)),
             nn.ReLU(),
             pufferlib.pytorch.layer_init(nn.Linear(hidden_size, hidden_size)),
             nn.ReLU(),
