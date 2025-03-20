@@ -585,6 +585,7 @@ def rollout(env_creator, env_kwargs, policy_cls, rnn_cls, agent_creator, agent_k
     tick = 0
     done = False
     # while tick <= 2000:
+    netReward = 0
     while not done:
         if tick % 1 == 0:
             render = driver.render()
@@ -614,8 +615,9 @@ def rollout(env_creator, env_kwargs, policy_cls, rnn_cls, agent_creator, agent_k
         ob, reward, terminated, truncated, info = env.step(action)
         done = terminated or truncated
         reward = reward.mean()
-        if tick % 128 == 0:
-            print(f'Reward: {reward:.4f}, Tick: {tick}')
+        netReward += reward
+        if tick % 64 == 0:
+            print(f'Reward: {reward:.4f}\tNet reward: {netReward:.4f}\tTick: {tick}')
         tick += 1
 
     # Save frames as gif
