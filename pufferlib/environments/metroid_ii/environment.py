@@ -25,5 +25,6 @@ def make(name, render_mode='rgb_array', buf=None):
 
     env = pufferlib.postprocess.EpisodeStats(env)
     # Should be much faster than using my old way of doing it
-    env = pufferlib.postprocess.ResizeObservation(env)
+    # Can't use this! My observation space includes other things aswell!
+    # env = pufferlib.postprocess.ResizeObservation(env)
     return pufferlib.emulation.GymnasiumPufferEnv(env=env, buf=buf)
