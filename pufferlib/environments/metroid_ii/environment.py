@@ -16,7 +16,7 @@ def env_creator(name='metroid_ii'):
 
 def make(name, render_mode='rgb_array', buf=None):
     '''Metroid II'''
-    speed = 1 if render_mode == 'human' else 0
+    speed = 6 if render_mode == 'human' else 0
     # If we are renderingit as a human, we probably want to watch it
 
     # From Metroid-II-RL repo, that was installed with `pip install -e .`
