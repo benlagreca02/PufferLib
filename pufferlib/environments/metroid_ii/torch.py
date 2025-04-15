@@ -8,15 +8,14 @@ from metroid_env import *
 
 class Recurrent(pufferlib.models.LSTMWrapper):
     def __init__(self, env, policy,
-            input_size=512, hidden_size=512, num_layers=1):
+            input_size=1024, hidden_size=1024, num_layers=1):
         super().__init__(env, policy,
             input_size, hidden_size, num_layers)
 
 class Policy(nn.Module):
-    # Flat size is dims after CNN
-    # framestack were ambiguous choice
+    # This is all horribly hacked
     def __init__(self, env, *args, framestack=1, flat_size=(4036),
-            input_size=512, hidden_size=512, output_size=512,
+            input_size=512, hidden_size=1024, output_size=512,  # input_size doesn't really get used for my code oops
             channels_last=True, downsample=1, **kwargs):
         super().__init__()
         self.channels_last = channels_last
